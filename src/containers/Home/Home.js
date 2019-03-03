@@ -1,87 +1,113 @@
 import React, { Component, Fragment } from 'react'
 import { Row, Col } from 'reactstrap'
+import {PER_PAGE,TOTAL_COUNT,getRestaurantsUrl} from '../../constants'
+import Pagination from '../../components/Pagination/Pagination'
+import Card from '../../components/Card/Card'
+import queryStringUtils from '../../utils/queryStringUtils'
 import axios from 'axios'
 import Jumbotron from '../../components/Jumbotron/Jumbotron'
-import Modal from '../../components/Modal/Modal'
 import Loader from '../../components/Loader/Loader'
+import './Home.scss'
 
 class Home extends Component {
   state = {
     loading: true,
-    products: [],
-    showModal: false
+    restaurants: [],
+    searchVal:'',
+    offset:0
   }
+  fetchData = (offset) => {
+    axios
+      .get(
+        getRestaurantsUrl(queryStringUtils.createQueryString({
+          _start:offset,
+          _end: offset+PER_PAGE
+        }))
+      )
+      .then(res => {
+        this.setState({
+          loading: false,
+          restaurants: res.data
+        })
+      })
+  }
+  handleSearchVal = (event) => {
+    this.setState({searchVal:event.target.value})
+  }
+
+  clearSearchVal = () => {
+    this.setState({
+      searchVal:''
+    })
+  }
+  handlePageClick = (data) => {
+    const {selected} = data
+    const updatedOffset = selected * PER_PAGE
+    console.log('selected',selected)
+    this.setState({
+      loading:false
+    },() => {
+      this.fetchData(updatedOffset)
+    })
+    
+  }
+
   componentDidMount() {
     this.setState(
       {
         loading: true
       },
       () => {
-        axios
-          .get(
-            'https://my-json-server.typicode.com/anuragb26/shopping-cart/productsInCart/'
-          )
-          .then(res => {
-            this.setState({
-              loading: false,
-              products: res.data
-            })
-          })
+        this.fetchData(this.state.offset)
       }
     )
   }
-  toggleModal = id => {
-    this.setState((prevState, props) => ({
-      showModal: !prevState.showModal
-    }))
-  }
   render() {
     const {
-      state: { showModal, loading, products }
+      state: {  loading, restaurants,searchVal }
     } = this
-    console.log('products', products)
+    console.log('products', restaurants)
     console.log('loading', loading)
+    const row1 = restaurants.slice(0,3)
+    const row2 = restaurants.slice(3,6)
+    const row3 = restaurants.slice(6,9)
     return (
       <Fragment>
         <Row>
           <Col sm="12">
-            <Jumbotron toggleModal={this.toggleModal} />
-            <Modal
-              isOpen={showModal}
-              heading="Add Restaurant"
-              size="lg"
-              closeHandler={this.toggleModal}
-            >
-              <div className="px-1 py-1 mx-1 my-1">Modal Content</div>
-            </Modal>
+            <Jumbotron searchVal={searchVal} onChange={this.handleSearchVal} clearSearch={this.clearSearchVal} />
           </Col>
         </Row>
-        <Row>
+       
           {loading ? (
             <Loader />
           ) : (
             <Fragment>
-              <Col
-                sm="4"
-                className="d-flex justify-content-center align-items-center"
-              >
-                <h2>{products[0].p_name || ''}</h2>
-              </Col>
-              <Col
-                sm="4"
-                className="d-flex justify-content-center align-items-center"
-              >
-                <h2>{products[1].p_name || ''}</h2>
-              </Col>
-              <Col
-                sm="4"
-                className="d-flex justify-content-center align-items-center"
-              >
-                <h2>{products[2].p_name || ''}</h2>
-              </Col>
+              {
+                [row1,row2,row3].map((row,index) => {
+                  return (
+                    <Row className = 'mx-3' key = {index}>
+                      {row.map(data => {
+                          return (
+                            <Col sm="4" key = {data.Name}>
+                              <Card restaurant={data} />
+                            </Col>
+                          )
+                      })}
+                    </Row>
+                  )
+                })
+              }
+    
+              <Row className='mt-4'>
+                <Col sm={{size:10,offset:2}} className = 'paginate-wrapper'>
+                  <Pagination handlePageClick = {this.handlePageClick}/>
+                </Col>
+              </Row>
+              
             </Fragment>
           )}
-        </Row>
+  
       </Fragment>
     )
   }

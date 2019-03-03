@@ -1,0 +1,19 @@
+.pagination {
+    li a {
+      padding:1rem 2rem;
+      text-align:center;
+      border:1px solid #ccc;
+      background: white;
+      cursor:pointer;
+      border-radius:8px;
+      outline:none;
+      text-decoration: none;
+    }
+    li.active a{
+      background:#0c0c0c
+    }
+    li.disabled  a{
+      background:#ddd;
+      cursor:not-allowed;
+    }
+  }

@@ -1,0 +1,30 @@
+.restaurant-search-bar {
+  width:50%;
+  .search-input {
+    text-indent: 22px;
+    &::placeholder {
+      font-size: 18px;
+    }
+    &.form-control:focus {
+      z-index: 0;
+    }
+  }
+  .search-img-container {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    cursor: pointer;
+  }
+  .clear-search {
+    right: 30px;
+    top: 12px;
+    color: blue;
+    cursor:pointer;
+  }
+}
+
+@media screen and(max-width:576px) {
+  .restaurant-search-bar .search-input::placeholder {
+    font-size: 14px;
+  }
+}
